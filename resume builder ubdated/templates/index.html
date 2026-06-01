@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Resume Builder AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+<!-- ── SIDEBAR NAV ──────────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-name">ResumeAI</div>
+      <div class="brand-sub">Smart Builder</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-step="0" onclick="goToStep(0)">
+      <span class="nav-icon">👤</span>
+      <span>Personal Info</span>
+      <span class="nav-badge" id="badge-0"></span>
+    </button>
+    <button class="nav-item" data-step="1" onclick="goToStep(1)">
+      <span class="nav-icon">💼</span>
+      <span>Experience</span>
+      <span class="nav-badge" id="badge-1"></span>
+    </button>
+    <button class="nav-item" data-step="2" onclick="goToStep(2)">
+      <span class="nav-icon">🎓</span>
+      <span>Education</span>
+      <span class="nav-badge" id="badge-2"></span>
+    </button>
+    <button class="nav-item" data-step="3" onclick="goToStep(3)">
+      <span class="nav-icon">⚡</span>
+      <span>Skills</span>
+      <span class="nav-badge" id="badge-3"></span>
+    </button>
+    <button class="nav-item" data-step="4" onclick="goToStep(4)">
+      <span class="nav-icon">🚀</span>
+      <span>Projects</span>
+      <span class="nav-badge" id="badge-4"></span>
+    </button>
+    <button class="nav-item" data-step="5" onclick="goToStep(5)">
+      <span class="nav-icon">🏆</span>
+      <span>Certifications</span>
+      <span class="nav-badge" id="badge-5"></span>
+    </button>
+    <button class="nav-item" data-step="6" onclick="goToStep(6)">
+      <span class="nav-icon">✨</span>
+      <span>Finalize & Export</span>
+      <span class="nav-badge" id="badge-6"></span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="btn-secondary btn-sm" onclick="openSavedResumes()">📁 Saved Resumes</button>
+    <button class="btn-ghost btn-sm" onclick="toggleDark()">🌙 Dark Mode</button>
+  </div>
+</aside>
+
+<!-- ── MAIN CONTENT ─────────────────────────────────────────────── -->
+<main class="main-content">
+  <div class="layout-with-preview" id="layout-with-preview">
+  <div class="form-column" id="form-column">
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="step-breadcrumb" id="breadcrumb">Personal Information</div>
+    </div>
+    <div class="topbar-right">
+      <div class="ats-pill" id="ats-pill" style="display:none">
+        <span class="ats-dot"></span>
+        ATS Score: <strong id="pill-score">—</strong>
+      </div>
+      <button class="btn-ghost btn-sm" id="preview-toggle-btn" onclick="togglePreview()">👁 Preview</button>
+      <button class="btn-primary btn-sm" onclick="saveResume()">💾 Save</button>
+    </div>
+  </header>
+
+  <!-- Progress bar -->
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:14%"></div>
+  </div>
+
+  <!-- Completeness Meter -->
+  <div id="completeness-meter" class="completeness-meter"></div>
+
+  <!-- ─── STEPS ──────────────────────────────────────────────────── -->
+  <div class="steps-container">
+
+    <!-- FEATURE 6: LinkedIn Import — drag-drop zone + banner -->
+    <div class="linkedin-import-banner" id="linkedin-import-banner">
+      <div class="import-banner-inner">
+        <span>⚡ Already have a LinkedIn profile?</span>
+        <label class="btn-import-linkedin" title="Upload your LinkedIn PDF export">
+          📄 Import from LinkedIn PDF
+          <input type="file" id="linkedin-file-input" accept=".pdf" style="display:none" onchange="importLinkedIn(this)">
+        </label>
+        <button class="banner-close" onclick="document.getElementById('linkedin-import-banner').style.display='none'">✕</button>
+      </div>
+    </div>
+
+    <!-- Drag & Drop LinkedIn Zone -->
+    <div id="linkedin-drop-zone" class="linkedin-drop-zone">
+      <div class="drop-zone-inner">
+        <div style="font-size:36px">📄</div>
+        <div class="drop-zone-title">Drag & Drop your LinkedIn PDF here</div>
+        <div class="drop-zone-sub">or</div>
+        <label class="btn-primary btn-sm" style="cursor:pointer;display:inline-block">
+          Browse File
+          <input type="file" accept=".pdf" style="display:none" onchange="importLinkedIn(this)">
+        </label>
+        <div class="drop-zone-hint">Export from LinkedIn → Me → Settings → Data Privacy → Get a copy of your data</div>
+      </div>
+    </div>
+
+    <!-- STEP 0: Personal Info -->
+    <section class="step-panel active" id="step-0">
+      <div class="panel-header">
+        <h2>Personal Information</h2>
+        <p>This appears in your resume header. Make it professional and complete.</p>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Full Name <span class="req">*</span></label>
+          <input type="text" id="p-name" placeholder="e.g. Arjun Sharma" class="input-field" oninput="updateBadge(0)">
+          <span class="field-hint">Use the name exactly as on your ID/LinkedIn</span>
+        </div>
+        <div class="form-group">
+          <label>Email Address <span class="req">*</span></label>
+          <input type="email" id="p-email" placeholder="arjun@example.com" class="input-field" oninput="validateEmail(this)">
+        </div>
+        <div class="form-group">
+          <label>Phone Number <span class="req">*</span></label>
+          <input type="tel" id="p-phone" placeholder="+91 98765 43210" class="input-field">
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="p-location" placeholder="Mumbai, Maharashtra" class="input-field">
+        </div>
+        <div class="form-group">
+          <label>Desired Job Role</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="p-role" placeholder="e.g. Software Engineer" class="input-field" list="role-suggestions-list" style="flex:1" oninput="debouncedRoleSuggest()">
+            <button class="btn-ai" onclick="getAIRoleSuggestions()" title="Get AI-powered role suggestions">🤖 AI Tips</button>
+          </div>
+          <div id="ai-role-suggestions-inline" class="ai-role-inline" style="display:none"></div>
+          <datalist id="role-suggestions-list">
+            <option value="Software Engineer">
+            <option value="Frontend Developer">
+            <option value="Backend Developer">
+            <option value="Full Stack Developer">
+            <option value="Senior Software Engineer">
+            <option value="Data Scientist">
+            <option value="Machine Learning Engineer">
+            <option value="AI Engineer">
+            <option value="MLOps Engineer">
+            <option value="DevOps Engineer">
+            <option value="Cloud Engineer">
+            <option value="Site Reliability Engineer">
+            <option value="Data Analyst">
+            <option value="Data Engineer">
+            <option value="Business Analyst">
+            <option value="Product Manager">
+            <option value="Technical Product Manager">
+            <option value="UI/UX Designer">
+            <option value="Product Designer">
+            <option value="Mobile Developer">
+            <option value="Android Developer">
+            <option value="iOS Developer">
+            <option value="React Native Developer">
+            <option value="Cybersecurity Analyst">
+            <option value="Network Engineer">
+            <option value="Database Administrator">
+            <option value="Blockchain Developer">
+            <option value="QA Engineer">
+            <option value="Embedded Systems Engineer">
+            <option value="Systems Architect">
+            <option value="Solutions Architect">
+            <option value="Scrum Master">
+            <option value="Technical Lead">
+            <option value="Engineering Manager">
+            <option value="CTO">
+          </datalist>
+        </div>
+        <div class="form-group">
+          <label>LinkedIn URL</label>
+          <input type="url" id="p-linkedin" placeholder="linkedin.com/in/arjunsharma" class="input-field">
+        </div>
+        <div class="form-group">
+          <label>GitHub URL</label>
+          <input type="url" id="p-github" placeholder="github.com/arjunsharma" class="input-field">
+        </div>
+        <div class="form-group">
+          <label>Portfolio Website</label>
+          <input type="url" id="p-website" placeholder="arjunsharma.dev" class="input-field">
+        </div>
+        <div class="form-group full">
+          <label>Professional Summary
+            <button class="btn-ai" id="btn-gen-summary" onclick="generateSummary()">✨ Generate with AI (Groq)</button>
+          </label>
+          <textarea id="p-summary" rows="4" placeholder="Brief 2-3 sentence summary of your professional background, key skills and career goals..." class="input-field textarea"></textarea>
+          <span class="field-hint">A strong summary improves ATS score by up to 15 points</span>
+        </div>
+      </div>
+      <div class="step-nav">
+        <div></div>
+        <button class="btn-primary" onclick="nextStep(0)">Next: Experience →</button>
+      </div>
+    </section>
+
+    <!-- STEP 1: Experience -->
+    <section class="step-panel" id="step-1">
+      <div class="panel-header">
+        <h2>Work Experience</h2>
+        <p>Add your positions starting with the most recent. Use action verbs and quantify achievements.</p>
+      </div>
+      <div id="experience-container"></div>
+      <button class="btn-add" onclick="addExperience()">+ Add Work Experience</button>
+      <!-- IMPROVEMENT 2: Bullet Rewriter -->
+      <div class="bullet-rewriter-card" id="bullet-rewriter-card">
+        <div class="bullet-rewriter-header">
+          🤖 <strong>AI Bullet Rewriter</strong>
+          <span style="font-size:12px;color:#64748b;font-weight:400"> — Paste a weak bullet, get 3 strong AI-powered versions</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start;margin-top:10px">
+          <textarea id="bullet-input" rows="2" class="input-field textarea" placeholder="e.g. Responsible for helping with the website..." style="flex:1;font-size:13px"></textarea>
+          <button class="btn-ai" onclick="rewriteBullet()" style="margin-top:0;flex-shrink:0">✨ Rewrite</button>
+        </div>
+        <div id="bullet-results" style="display:none;margin-top:10px"></div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="prevStep(1)">← Back</button>
+        <button class="btn-primary" onclick="nextStep(1)">Next: Education →</button>
+      </div>
+    </section>
+
+    <!-- STEP 2: Education -->
+    <section class="step-panel" id="step-2">
+      <div class="panel-header">
+        <h2>Education</h2>
+        <p>Include your highest degree first. Add GPA if it's above 3.5/4.0 or equivalent.</p>
+      </div>
+      <div id="education-container"></div>
+      <button class="btn-add" onclick="addEducation()">+ Add Education</button>
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="prevStep(2)">← Back</button>
+        <button class="btn-primary" onclick="nextStep(2)">Next: Skills →</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: Skills -->
+    <section class="step-panel" id="step-3">
+      <div class="panel-header">
+        <h2>Skills</h2>
+        <p>Add technical and soft skills. More relevant skills = better ATS score. Click suggestions to add.</p>
+      </div>
+      <div class="skills-input-area">
+        <div class="form-group">
+          <label>Add Skill</label>
+          <div class="skill-input-row">
+            <input type="text" id="skill-input" placeholder="Type a skill and press Enter or Add" class="input-field" onkeypress="if(event.key==='Enter') addSkill()">
+            <button class="btn-primary" onclick="addSkill()">Add</button>
+          </div>
+        </div>
+        <div id="skill-tags" class="skill-tags"></div>
+        <div class="skill-suggestions">
+          <div class="suggestions-label">Quick Add Suggestions:</div>
+          <div id="suggestion-chips" class="suggestion-chips">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:20px">
+        <label>Languages</label>
+        <div class="skill-input-row">
+          <input type="text" id="lang-input" placeholder="e.g. English (Fluent)" class="input-field" onkeypress="if(event.key==='Enter') addLanguage()">
+          <button class="btn-primary" onclick="addLanguage()">Add</button>
+        </div>
+        <div id="lang-tags" class="skill-tags"></div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="prevStep(3)">← Back</button>
+        <button class="btn-primary" onclick="nextStep(3)">Next: Projects →</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: Projects -->
+    <section class="step-panel" id="step-4">
+      <div class="panel-header">
+        <h2>Projects</h2>
+        <p>Showcase real projects — especially relevant ones for your target role. Include tech stack and impact.</p>
+      </div>
+      <div id="projects-container"></div>
+      <button class="btn-add" onclick="addProject()">+ Add Project</button>
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="prevStep(4)">← Back</button>
+        <button class="btn-primary" onclick="nextStep(4)">Next: Certifications →</button>
+      </div>
+    </section>
+
+    <!-- STEP 5: Certifications & Achievements -->
+    <section class="step-panel" id="step-5">
+      <div class="panel-header">
+        <h2>Certifications & Achievements</h2>
+        <p>Certifications significantly boost ATS keyword matching for technical roles.</p>
+      </div>
+      <div id="certifications-container"></div>
+      <button class="btn-add" onclick="addCertification()">+ Add Certification</button>
+
+      <div class="panel-header" style="margin-top: 32px">
+        <h3>Achievements & Awards</h3>
+        <p>Hackathon wins, academic honors, publications, etc.</p>
+      </div>
+      <div id="achievements-container"></div>
+      <button class="btn-add" onclick="addAchievement()">+ Add Achievement</button>
+
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="prevStep(5)">← Back</button>
+        <button class="btn-primary" onclick="nextStep(5)">Finalize Resume →</button>
+      </div>
+    </section>
+
+    <!-- STEP 6: ATS Analysis + Export -->
+    <section class="step-panel" id="step-6">
+      <div class="panel-header">
+        <h2>ATS Analysis & Export</h2>
+        <p>Analyze your resume for ATS compatibility, review suggestions, then export your PDF.</p>
+      </div>
+
+      <!-- JD Input -->
+      <div class="jd-section">
+        <label class="jd-label">
+          <span>📋 Paste Job Description (Optional — improves ATS matching accuracy)</span>
+        </label>
+        <textarea id="jd-input" rows="5" placeholder="Paste the job description here to get a more accurate ATS score and see exactly which keywords you're missing..." class="input-field textarea jd-textarea"></textarea>
+        <div class="jd-ai-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <button class="btn-ai btn-sm" onclick="runKeywordGap()">🎯 Keyword Gap Analysis</button>
+          <button class="btn-ai btn-sm" onclick="generateCoverLetter()">📝 Generate Cover Letter</button>
+          <button class="btn-ai btn-sm" onclick="generateInterviewQuestions()">🎤 Interview Questions</button>
+        </div>
+      </div>
+
+      <!-- Keyword Gap Result -->
+      <div id="keyword-gap-panel" style="display:none;margin-top:16px;" class="ai-result-panel">
+        <div class="ai-result-title">🎯 ATS Keyword Gap Analysis</div>
+        <div id="keyword-gap-content"></div>
+      </div>
+
+      <!-- Cover Letter Result -->
+      <div id="cover-letter-panel" style="display:none;margin-top:16px;" class="ai-result-panel">
+        <div class="ai-result-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>📝 Generated Cover Letter</span>
+          <button class="btn-sm btn-copy" onclick="copyCoverLetter()">📋 Copy</button>
+        </div>
+        <textarea id="cover-letter-text" rows="12" class="input-field textarea" style="margin-top:10px;font-size:13px;"></textarea>
+      </div>
+
+      <!-- Interview Questions Result -->
+      <div id="interview-panel" style="display:none;margin-top:16px;" class="ai-result-panel">
+        <div class="ai-result-title">🎤 Likely Interview Questions</div>
+        <ol id="interview-list" style="padding-left:20px;margin-top:10px;line-height:2;"></ol>
+      </div>
+
+      <!-- Template Picker (25 templates loaded dynamically) -->
+      <div class="template-section">
+        <label>🎨 Choose Resume Template <span class="template-count-badge" id="template-count-badge">25 templates</span></label>
+        <div class="template-grid" id="template-grid">
+          <!-- Populated by JS via /api/themes -->
+          <div class="template-skeleton"></div>
+          <div class="template-skeleton"></div>
+          <div class="template-skeleton"></div>
+          <div class="template-skeleton"></div>
+          <div class="template-skeleton"></div>
+          <div class="template-skeleton"></div>
+        </div>
+      </div>
+
+      <!-- ── MANUAL RESUME EDITOR ─────────────────────────────────── -->
+      <div class="manual-editor-section">
+        <div class="editor-header" onclick="toggleEditor()">
+          <span>✏️ Manual Resume Editor</span>
+          <span class="editor-toggle-icon" id="editor-toggle-icon">▼</span>
+          <small>Fine-tune every field before exporting</small>
+        </div>
+        <div class="editor-body" id="editor-body" style="display:none">
+
+          <!-- Personal Info -->
+          <div class="editor-group">
+            <div class="editor-group-title">👤 Personal Information</div>
+            <div class="editor-row">
+              <div class="editor-field"><label>Full Name</label><input id="ed-name" class="input-field ed-input" placeholder="Jane Doe" oninput="syncEditorField('personal','name',this.value)"></div>
+              <div class="editor-field"><label>Desired Role</label><input id="ed-role" class="input-field ed-input" placeholder="Software Engineer" oninput="syncEditorField('personal','desired_role',this.value)"></div>
+            </div>
+            <div class="editor-row">
+              <div class="editor-field"><label>Email</label><input id="ed-email" class="input-field ed-input" type="email" oninput="syncEditorField('personal','email',this.value)"></div>
+              <div class="editor-field"><label>Phone</label><input id="ed-phone" class="input-field ed-input" oninput="syncEditorField('personal','phone',this.value)"></div>
+            </div>
+            <div class="editor-row">
+              <div class="editor-field"><label>Location</label><input id="ed-location" class="input-field ed-input" oninput="syncEditorField('personal','location',this.value)"></div>
+              <div class="editor-field"><label>LinkedIn</label><input id="ed-linkedin" class="input-field ed-input" oninput="syncEditorField('personal','linkedin',this.value)"></div>
+            </div>
+            <div class="editor-row">
+              <div class="editor-field"><label>GitHub</label><input id="ed-github" class="input-field ed-input" oninput="syncEditorField('personal','github',this.value)"></div>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div class="editor-group">
+            <div class="editor-group-title">📝 Professional Summary</div>
+            <textarea id="ed-summary" rows="4" class="input-field textarea ed-input" placeholder="Write your professional summary here..." oninput="syncEditorDirect('summary',this.value)"></textarea>
+          </div>
+
+          <!-- Experience -->
+          <div class="editor-group">
+            <div class="editor-group-title">💼 Work Experience</div>
+            <div id="ed-experience-list"></div>
+            <button class="btn-add-entry" onclick="addEditorExperience()">+ Add Experience</button>
+          </div>
+
+          <!-- Education -->
+          <div class="editor-group">
+            <div class="editor-group-title">🎓 Education</div>
+            <div id="ed-education-list"></div>
+            <button class="btn-add-entry" onclick="addEditorEducation()">+ Add Education</button>
+          </div>
+
+          <!-- Skills -->
+          <div class="editor-group">
+            <div class="editor-group-title">⚡ Skills</div>
+            <div class="editor-row">
+              <div class="editor-field" style="flex:1">
+                <label>Skills (comma-separated)</label>
+                <textarea id="ed-skills" rows="3" class="input-field textarea ed-input" placeholder="Python, React, SQL, AWS..." oninput="syncEditorSkills(this.value)"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Projects -->
+          <div class="editor-group">
+            <div class="editor-group-title">🚀 Projects</div>
+            <div id="ed-projects-list"></div>
+            <button class="btn-add-entry" onclick="addEditorProject()">+ Add Project</button>
+          </div>
+
+          <!-- Certifications -->
+          <div class="editor-group">
+            <div class="editor-group-title">🏆 Certifications</div>
+            <div id="ed-certs-list"></div>
+            <button class="btn-add-entry" onclick="addEditorCert()">+ Add Certification</button>
+          </div>
+
+          <!-- Languages & Achievements -->
+          <div class="editor-group">
+            <div class="editor-group-title">🌐 Languages & Achievements</div>
+            <div class="editor-row">
+              <div class="editor-field">
+                <label>Languages (comma-separated)</label>
+                <input id="ed-languages" class="input-field ed-input" placeholder="English, Hindi, French" oninput="syncEditorLanguages(this.value)">
+              </div>
+            </div>
+            <div class="editor-row">
+              <div class="editor-field" style="flex:1">
+                <label>Achievements (one per line)</label>
+                <textarea id="ed-achievements" rows="3" class="input-field textarea ed-input" placeholder="Employee of the Year 2023..." oninput="syncEditorAchievements(this.value)"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="editor-actions">
+            <button class="btn-secondary" onclick="refreshEditorFromData()">↺ Refresh from Form Data</button>
+            <button class="btn-primary" onclick="exportPDF()">📄 Export PDF with Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="analyze-actions">
+        <button class="btn-analyze" onclick="analyzeResume()">
+          🔍 Analyze Resume
+        </button>
+      </div>
+
+      <!-- ATS Score Display -->
+      <div class="ats-results" id="ats-results" style="display:none">
+        <!-- Score Ring -->
+        <div class="score-section">
+          <div class="score-ring-container">
+            <svg class="score-ring" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="#e2e8f0" stroke-width="10"/>
+              <circle cx="60" cy="60" r="52" fill="none" stroke-width="10"
+                stroke-linecap="round" stroke-dasharray="327"
+                stroke-dashoffset="327" id="score-ring-fill"
+                transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="score-center">
+              <div class="score-number" id="score-display">0</div>
+              <div class="score-label">ATS Score</div>
+              <div class="score-rating" id="score-rating">—</div>
+            </div>
+          </div>
+
+          <!-- Score Breakdown -->
+          <div class="score-breakdown">
+            <h4>Score Breakdown</h4>
+            <div id="breakdown-bars"></div>
+          </div>
+        </div>
+
+        <!-- Tabs for feedback -->
+        <div class="feedback-tabs">
+          <button class="tab-btn active" onclick="switchTab('strengths')">✅ Strengths</button>
+          <button class="tab-btn" onclick="switchTab('improvements')">🔧 Improvements</button>
+          <button class="tab-btn" onclick="switchTab('missing')">❌ Missing Keywords</button>
+          <button class="tab-btn" onclick="switchTab('suggestions')">💡 Suggestions</button>
+        </div>
+        <div class="tab-content" id="tab-content"></div>
+
+        <!-- AI Summary suggestion -->
+        <div class="ai-summary-box" id="ai-summary-box" style="display:none">
+          <div class="ai-badge">✨ AI Generated Summary</div>
+          <p id="ai-summary-text"></p>
+          <button class="btn-secondary btn-sm" onclick="applyAISummary()">Apply This Summary</button>
+        </div>
+
+        <!-- Role Suggestions -->
+        <div class="role-suggestions-box" id="role-suggestions-box" style="display:none">
+          <h4>🎯 Role-Based Skill Recommendations</h4>
+          <p id="role-match-label"></p>
+          <div id="role-skill-chips"></div>
+        </div>
+      </div>
+
+      <!-- Export Actions -->
+      <div class="export-section" id="export-section">
+        <h4>Export Your Resume</h4>
+        <div class="export-actions">
+          <button class="btn-export" onclick="exportPDF()">
+            <span class="export-icon">📄</span>
+            <div>
+              <div class="export-title">Download PDF</div>
+              <div class="export-sub">Professional format, ATS-optimized</div>
+            </div>
+          </button>
+          <button class="btn-export btn-save-export" onclick="saveResume()">
+            <span class="export-icon">💾</span>
+            <div>
+              <div class="export-title">Save to Database</div>
+              <div class="export-sub">Access from any device later</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="prevStep(6)">← Back</button>
+        <button class="btn-primary" onclick="window.print && alert('Use Download PDF for best results!')">🖨 Print</button>
+      </div>
+    </section>
+
+  </div>
+  </div><!-- /form-column -->
+
+  <!-- IMPROVEMENT 1: Live Preview Panel -->
+  <div class="preview-panel" id="preview-panel">
+    <div class="preview-header">
+      <span>👁 Live Preview</span>
+      <button class="preview-close-btn" onclick="togglePreview(false)">✕ Close</button>
+    </div>
+    <div class="preview-loading" id="preview-loading" style="display:none">
+      <div class="preview-spinner"></div> Updating preview...
+    </div>
+    <iframe id="preview-iframe" class="preview-iframe" title="Resume Preview"></iframe>
+  </div>
+
+  </div><!-- /layout-with-preview -->
+</main>
+
+<!-- ── MODALS ────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modal-title">Saved Resumes</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="/static/js/main.js"></script>
+</body>
+</html>
